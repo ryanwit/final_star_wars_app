@@ -1,0 +1,94 @@
+// Dependencies
+// =============================================================
+var express = require("express");
+var path = require("path");
+
+// Sets up the Express App
+// =============================================================
+var app = express();
+var PORT = 3000;
+
+// Sets up the Express app to handle data parsing
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Star Wars Characters (DATA)
+// =============================================================
+var characters = [
+  {
+    routeName: "yoda",
+    name: "Yoda",
+    role: "Jedi Master",
+    age: 900,
+    forcePoints: 2000
+  },
+  {
+    routeName: "darthmaul",
+    name: "Darth Maul",
+    role: "Sith Lord",
+    age: 200,
+    forcePoints: 1200
+  },
+  {
+    routeName: "obiwankenobi",
+    name: "Obi Wan Kenobi",
+    role: "Jedi Master",
+    age: 55,
+    forcePoints: 1350
+  }
+];
+
+// Routes
+// =============================================================
+
+// Basic route that sends the user first to the AJAX Page
+app.get("/", function(req, res) {
+  res.sendFile(path.join(__dirname, "view.html"));
+});
+
+app.get("/add", function(req, res) {
+  res.sendFile(path.join(__dirname, "add.html"));
+});
+
+// Displays all characters
+app.get("/api/characters", function(req, res) {
+  return res.json(characters);
+});
+
+// Displays a single character, or returns false
+app.get("/api/characters/:character", function(req, res) {
+  var chosen = req.params.character;
+
+  console.log(chosen);
+
+  for (var i = 0; i < characters.length; i++) {
+    if (chosen === characters[i].routeName) {
+      return res.json(characters[i]);
+    }
+  }
+
+  return res.json(false);
+});
+
+// Create New Characters - takes in JSON input //!new characters - sent data from the front end to the back end // we access that data by req.body
+app.post("/api/characters", function(req, res) {
+  // req.body hosts is equal to the JSON post sent from the user
+  // This works because of our body parsing middleware
+  var newCharacter = req.body; //! we are setting new character = to new character object sent from the front end to the back end // now the back end data has that data and can do it's magic with it // if we had a database we could store it to mongo or my SQL
+
+  // Using a RegEx Pattern to remove spaces from newCharacter
+  // You can read more about RegEx Patterns later https://www.regexbuddy.com/regex.html
+  newCharacter.routeName = newCharacter.name.replace(/\s+/g, "").toLowerCase(); //!this creates new route name for data entered by the user // it's going to get rid of the spaces and make it all lower case // routename = "dogthebountyhunter" - which we need that so that we can set-up the object as the previous one 
+
+  console.log(newCharacter);
+
+  characters.push(newCharacter); //!pushed it to character array
+
+  res.json(newCharacter); //! send json of the new character to the front end // over and out we're done here // 
+});
+
+// Starts the server to begin listening
+// =============================================================
+app.listen(PORT, function() {
+  console.log("App listening on PORT " + PORT);
+});
